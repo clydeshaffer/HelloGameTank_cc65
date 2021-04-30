@@ -1,36 +1,4 @@
-#define dma_flags ((volatile char *) 0x2007)
-#define vram ((volatile char *) 0x4000)
-#define vram_VX ((volatile char *) 0x4000)
-#define vram_VY ((volatile char *) 0x4001)
-#define vram_GX ((volatile char *) 0x4002)
-#define vram_GY ((volatile char *) 0x4003)
-#define vram_WIDTH ((volatile char *) 0x4004)
-#define vram_HEIGHT ((volatile char *) 0x4005)
-#define vram_COLOR ((volatile char *) 0x4007)
-#define vram_START ((volatile char *) 0x4006)
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 128
-
-#define DMA_ENABLE 1
-#define DMA_PAGE_OUT 2
-#define DMA_NMI 4
-#define DMA_GRAM_PAGE 8
-#define DMA_VRAM_PAGE 16
-#define DMA_CPU_TO_VRAM 32
-#define DMA_IRQ 64
-#define DMA_TRANS 128
-
-#define VX 0
-#define VY 1
-#define GX 2
-#define GY 3
-#define WIDTH 4
-#define HEIGHT 5
-#define START 6
-#define COLOR 7
-
-#define DMA_GX_SOLIDCOLOR_FLAG 0x80
+#include "gametank.h"
 
 extern void wait ();
 
@@ -42,6 +10,18 @@ void CLS(char c) {
     vram[WIDTH] = SCREEN_WIDTH-1;
     vram[HEIGHT] = SCREEN_HEIGHT-1;
     vram[COLOR] = ~c;
+    vram[START] = 1;
+    wait ();
+    vram[VX] = SCREEN_WIDTH-1;
+    vram[VY] = 0;
+    vram[WIDTH] = 1;
+    vram[HEIGHT] = SCREEN_HEIGHT-1;
+    vram[START] = 1;
+    wait ();
+    vram[VX] = 0;
+    vram[VY] = SCREEN_HEIGHT-1;
+    vram[WIDTH] = SCREEN_WIDTH-1;
+    vram[HEIGHT] = 1;
     vram[START] = 1;
     wait ();
 }
@@ -59,12 +39,26 @@ void FillRect(char x, char y, char w, char h, char c) {
 }
 
 int main () {
+    char col = 0, row = 0;
+    int dx = 1, dy = 1;
     *dma_flags = DMA_NMI | DMA_ENABLE | DMA_IRQ | DMA_TRANS;
-    CLS(3);
-    FillRect(SCREEN_WIDTH-1, 0, 1, SCREEN_HEIGHT-1, 3);
-    FillRect(10, 10, 20, 15, 63);
 
   while (1) {                                     //  Run forever
+    CLS(3);
+    FillRect(col, row, 8, 8, 92);
+    col += dx;
+    row += dy;
+    if(col == 1) {
+        dx = 1;
+    } else if(col == 111) {
+        dx = -1;
+    }
+    if(row == 1) {
+        dy = 1;
+    } else if(row == 100) {
+        dy = -1;
+    }
+    wait();
   }
 
   return (0);                                     //  We should never get here!

@@ -10,7 +10,7 @@ LLIBS = lib/gametank.lib
 SDIR = src
 ODIR = build
 
-_COBJS = hello.o
+_COBJS = hello.o gametank.o
 COBJS = $(patsubst %,$(ODIR)/%,$(_COBJS))
 _AOBJS = vectors.o wait.o interrupt.o
 AOBJS = $(patsubst %,$(ODIR)/%,$(_AOBJS))

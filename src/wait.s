@@ -14,7 +14,7 @@
 
 .proc _wait: near
 
-           CLI                    ; Enable interrupts
+           SEI                    ; Enable interrupts
 .byte      $CB                    ; Inserts a WAI opcode
            RTS                    ; Return to caller
 

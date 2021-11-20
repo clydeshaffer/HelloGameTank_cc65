@@ -6,7 +6,7 @@
 ;
 ; Checks for a BRK instruction and returns from all valid interrupts.
 
-.import   _stop
+.import   _stop, _NMIHandler
 .export   _irq_int, _nmi_int
 
 .segment  "CODE"
@@ -16,26 +16,20 @@
 ; ---------------------------------------------------------------------------
 ; Non-maskable interrupt (NMI) service routine
 
-_nmi_int:  RTI                    ; Return from all NMI interrupts
+_nmi_int:  
+           JSR _NMIHandler
+           RTI                    ; Return from all NMI interrupts
 
 ; ---------------------------------------------------------------------------
 ; Maskable interrupt (IRQ) service routine
 
-_irq_int:  PHX                    ; Save X register contents to stack
-           TSX                    ; Transfer stack pointer to X
-           PHA                    ; Save accumulator contents to stack
-           INX                    ; Increment X so it points to the status
-           INX                    ;   register value saved on the stack
-           LDA $100,X             ; Load status register contents
-           AND #$10               ; Isolate B status bit
-           BNE break              ; If B = 1, BRK detected
-
-; ---------------------------------------------------------------------------
-; IRQ detected, return
-
-irq:       PLA                    ; Restore accumulator contents
-           PLX                    ; Restore X register contents
-           RTI                    ; Return from all IRQ interrupts
+_irq_int:  
+           SEI
+.byte      $9C
+.byte      $06
+.byte      $40
+           CLI
+           RTI
 
 ; ---------------------------------------------------------------------------
 ; BRK detected, stop
